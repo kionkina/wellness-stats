@@ -9,17 +9,29 @@ export function predictCycle(checkins: CheckIn[]): CyclePrediction | null {
 
   if (periodDays.length < 2) return null;
 
-  // Group consecutive period days into cycles
-  const cycleStarts: string[] = [periodDays[0].date];
+  // Use explicit period_start flags if available
+  const explicitStarts = periodDays
+    .filter((c) => c.period_start)
+    .map((c) => c.date);
 
-  for (let i = 1; i < periodDays.length; i++) {
-    const prev = parseISO(periodDays[i - 1].date);
-    const curr = parseISO(periodDays[i].date);
-    const diff = differenceInDays(curr, prev);
+  let cycleStarts: string[];
 
-    if (diff > 5) {
-      // New cycle (gap of more than 5 days between period entries)
-      cycleStarts.push(periodDays[i].date);
+  if (explicitStarts.length >= 2) {
+    // Prefer explicit first-day-of-period entries
+    cycleStarts = explicitStarts;
+  } else {
+    // Fall back to gap-based heuristic for older data
+    cycleStarts = [periodDays[0].date];
+
+    for (let i = 1; i < periodDays.length; i++) {
+      const prev = parseISO(periodDays[i - 1].date);
+      const curr = parseISO(periodDays[i].date);
+      const diff = differenceInDays(curr, prev);
+
+      if (diff > 5) {
+        // New cycle (gap of more than 5 days between period entries)
+        cycleStarts.push(periodDays[i].date);
+      }
     }
   }
 

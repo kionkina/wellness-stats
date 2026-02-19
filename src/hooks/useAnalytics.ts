@@ -65,8 +65,8 @@ export function useAnalytics(range: DateRange = '30d') {
     () =>
       calculateMovingAverage(
         checkins
-          .filter((c) => c.mood !== null)
-          .map((c) => ({ date: c.date, value: c.mood! })),
+          .filter((c) => c.mood_score !== null)
+          .map((c) => ({ date: c.date, value: c.mood_score! })),
         7
       ),
     [checkins]
@@ -76,8 +76,8 @@ export function useAnalytics(range: DateRange = '30d') {
     () =>
       calculateMovingAverage(
         checkins
-          .filter((c) => c.energy !== null)
-          .map((c) => ({ date: c.date, value: c.energy! })),
+          .filter((c) => c.energy_score !== null)
+          .map((c) => ({ date: c.date, value: c.energy_score! })),
         7
       ),
     [checkins]
@@ -94,11 +94,22 @@ export function useAnalytics(range: DateRange = '30d') {
     [checkins]
   );
 
+  const sleepData = useMemo(
+    () =>
+      calculateMovingAverage(
+        checkins
+          .filter((c) => c.sleep_hours !== null)
+          .map((c) => ({ date: c.date, value: c.sleep_hours! })),
+        7
+      ),
+    [checkins]
+  );
+
   const heatmapData = useMemo(
     () =>
       checkins.map((c) => ({
         date: c.date,
-        count: c.mood || 0,
+        count: c.mood_score ?? 0,
       })),
     [checkins]
   );
@@ -112,6 +123,7 @@ export function useAnalytics(range: DateRange = '30d') {
     moodData,
     energyData,
     appetiteData,
+    sleepData,
     heatmapData,
   };
 }

@@ -4,13 +4,16 @@ import { useCheckin, useRecentCheckins } from '@/hooks/useCheckin';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MOOD_LABELS, ENERGY_LABELS, APPETITE_LABELS, FEELING_COLORS, type PrimaryFeeling } from '@/lib/constants';
+import { MOOD_OPTIONS, APPETITE_LABELS, MOOD_TAG_COLORS } from '@/lib/constants';
 import { format, parseISO } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Loader2, PenSquare, CheckCircle2 } from 'lucide-react';
 import type { CheckIn } from '@/lib/types';
 
-const MOOD_EMOJIS = ['', '😞', '😕', '😐', '🙂', '😄'];
+function getMoodEmoji(label: string | null): string {
+  if (!label) return '';
+  return MOOD_OPTIONS.find((o) => o.label === label)?.emoji ?? '';
+}
 
 function CheckinSummary({ checkin }: { checkin: CheckIn }) {
   return (
@@ -25,33 +28,33 @@ function CheckinSummary({ checkin }: { checkin: CheckIn }) {
       </div>
       <div className="flex-1 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
-          {checkin.mood && (
+          {checkin.mood_label && (
             <span className="text-sm">
-              {MOOD_EMOJIS[checkin.mood]} {MOOD_LABELS[checkin.mood]}
+              {getMoodEmoji(checkin.mood_label)} {checkin.mood_label}
             </span>
           )}
-          {checkin.energy && (
+          {checkin.energy_label && (
             <span className="text-sm text-muted-foreground">
-              · Energy: {ENERGY_LABELS[checkin.energy]}
+              · Energy: {checkin.energy_label}
             </span>
           )}
-          {checkin.appetite && (
+          {checkin.sleep_hours && (
             <span className="text-sm text-muted-foreground">
-              · Appetite: {APPETITE_LABELS[checkin.appetite]}
+              · {checkin.sleep_hours}h sleep
             </span>
           )}
         </div>
         <div className="flex flex-wrap gap-1">
-          {checkin.feelings?.map((path: string[], i: number) => (
+          {checkin.mood_tags?.map((tag: string) => (
             <Badge
-              key={i}
+              key={tag}
               variant="secondary"
-              className="text-[10px] px-1.5 py-0"
+              className="text-[10px] px-1.5 py-0 capitalize"
               style={{
-                backgroundColor: `${FEELING_COLORS[path[0] as PrimaryFeeling]}25`,
+                backgroundColor: `${MOOD_TAG_COLORS[tag] || '#d1d5db'}25`,
               }}
             >
-              {path[path.length - 1]}
+              {tag}
             </Badge>
           ))}
           {checkin.exercised && (
@@ -70,6 +73,11 @@ function CheckinSummary({ checkin }: { checkin: CheckIn }) {
             </Badge>
           )}
         </div>
+        {checkin.note && (
+          <p className="text-xs text-muted-foreground line-clamp-1">
+            {checkin.note}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -110,16 +118,16 @@ export default function DashboardPage() {
           {isEdit ? (
             <div className="space-y-2">
               <div className="flex items-center gap-4">
-                {state.mood && (
+                {state.mood_label && (
                   <div className="text-center">
-                    <span className="text-2xl">{MOOD_EMOJIS[state.mood]}</span>
-                    <p className="text-xs text-muted-foreground">{MOOD_LABELS[state.mood]}</p>
+                    <span className="text-2xl">{getMoodEmoji(state.mood_label)}</span>
+                    <p className="text-xs text-muted-foreground">{state.mood_label}</p>
                   </div>
                 )}
-                {state.energy && (
+                {state.energy_label && (
                   <div className="text-center">
                     <p className="text-sm font-medium">Energy</p>
-                    <p className="text-xs text-muted-foreground">{ENERGY_LABELS[state.energy]}</p>
+                    <p className="text-xs text-muted-foreground">{state.energy_label}</p>
                   </div>
                 )}
                 {state.appetite && (
@@ -128,7 +136,27 @@ export default function DashboardPage() {
                     <p className="text-xs text-muted-foreground">{APPETITE_LABELS[state.appetite]}</p>
                   </div>
                 )}
+                {state.sleep_hours && (
+                  <div className="text-center">
+                    <p className="text-sm font-medium">Sleep</p>
+                    <p className="text-xs text-muted-foreground">{state.sleep_hours}h</p>
+                  </div>
+                )}
               </div>
+              {state.mood_tags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {state.mood_tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="secondary"
+                      className="text-[10px] capitalize"
+                      style={{ backgroundColor: `${MOOD_TAG_COLORS[tag] || '#d1d5db'}25` }}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
               <Button
                 variant="outline"
                 size="sm"

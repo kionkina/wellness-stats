@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { TRACKABLE_FEATURES, ALL_FEATURE_KEYS } from '@/lib/constants';
 
 const TIMEZONES = Intl.supportedValuesOf('timeZone');
 
@@ -23,6 +24,7 @@ export default function SettingsPage() {
 
   const [reminderTime, setReminderTime] = useState('20:00');
   const [timezone, setTimezone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const [trackedFeatures, setTrackedFeatures] = useState<string[]>(ALL_FEATURE_KEYS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -38,6 +40,7 @@ export default function SettingsPage() {
       if (data) {
         if (data.reminder_time) setReminderTime(data.reminder_time);
         if (data.timezone) setTimezone(data.timezone);
+        if (data.tracked_features) setTrackedFeatures(data.tracked_features);
       }
       setLoading(false);
     }
@@ -51,7 +54,11 @@ export default function SettingsPage() {
 
     const { error } = await supabase
       .from('profiles')
-      .update({ reminder_time: reminderTime, timezone })
+      .update({
+        reminder_time: reminderTime,
+        timezone,
+        tracked_features: trackedFeatures,
+      })
       .eq('id', user.id);
 
     setSaving(false);
@@ -98,6 +105,37 @@ export default function SettingsPage() {
           <Button variant="outline" size="sm" onClick={signOut}>
             Sign out
           </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Tracked Features</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Choose which optional sections appear in your daily check-in.
+            Mood, energy, sleep, and notes are always shown.
+          </p>
+          {TRACKABLE_FEATURES.map((feature) => (
+            <div key={feature.key} className="flex items-center justify-between">
+              <div>
+                <Label htmlFor={`feature-${feature.key}`}>{feature.label}</Label>
+                <p className="text-xs text-muted-foreground">{feature.description}</p>
+              </div>
+              <Switch
+                id={`feature-${feature.key}`}
+                checked={trackedFeatures.includes(feature.key)}
+                onCheckedChange={(checked) => {
+                  setTrackedFeatures((prev) =>
+                    checked
+                      ? [...prev, feature.key]
+                      : prev.filter((k) => k !== feature.key)
+                  );
+                }}
+              />
+            </div>
+          ))}
         </CardContent>
       </Card>
 

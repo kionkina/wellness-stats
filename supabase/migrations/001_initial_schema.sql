@@ -45,7 +45,9 @@ create table public.checkins (
   mood smallint check (mood between 1 and 5),
   energy smallint check (energy between 1 and 5),
   appetite smallint check (appetite between 1 and 5),
-  feelings jsonb, -- [["happy","playful","cheeky"], ...]
+  sleep_hours numeric(3,1) check (sleep_hours between 0 and 24),
+  day_description text, -- free-text description of the day, replaces feelings wheel
+  mood_tags text[], -- derived mood tags from day_description
   bloating boolean default false,
   bloating_severity smallint check (bloating_severity between 1 and 3),
   exercised boolean default false,

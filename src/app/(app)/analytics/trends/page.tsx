@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function TrendsPage() {
   const [range, setRange] = useState<DateRange>('30d');
-  const { moodData, energyData, appetiteData, loading } = useAnalytics(range);
+  const { moodData, energyData, appetiteData, sleepData, loading } = useAnalytics(range);
 
   if (loading) {
     return (
@@ -61,7 +61,30 @@ export default function TrendsPage() {
             <CardTitle className="text-sm">Appetite</CardTitle>
           </CardHeader>
           <CardContent>
-            <TrendChart data={appetiteData} label="Appetite" color="hsl(var(--chart-4))" />
+            <TrendChart
+              data={appetiteData}
+              label="Appetite"
+              color="hsl(var(--chart-4))"
+              yDomain={[1, 5]}
+              yTicks={[1, 2, 3, 4, 5]}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {sleepData.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm">Sleep</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TrendChart
+              data={sleepData}
+              label="Sleep"
+              color="hsl(var(--chart-5))"
+              yDomain={[0, 12]}
+              yTicks={[0, 3, 6, 9, 12]}
+            />
           </CardContent>
         </Card>
       )}

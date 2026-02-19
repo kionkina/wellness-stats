@@ -8,16 +8,21 @@ import type { CheckIn } from '@/lib/types';
 const today = () => format(new Date(), 'yyyy-MM-dd');
 
 export interface CheckInState {
-  mood: number | null;
-  energy: number | null;
+  mood_label: string | null;
+  mood_score: number | null;
+  energy_label: string | null;
+  energy_score: number | null;
   appetite: number | null;
-  feelings: string[][];
+  sleep_hours: number | null;
+  note: string | null;
+  mood_tags: string[];
   bloating: boolean;
   bloating_severity: number | null;
   exercised: boolean;
   exercise_type: string | null;
   exercise_minutes: number | null;
   period: boolean;
+  period_start: boolean;
   flow_level: number | null;
   sick: boolean;
   pain_areas: string[];
@@ -26,16 +31,21 @@ export interface CheckInState {
 }
 
 const defaultState: CheckInState = {
-  mood: null,
-  energy: null,
+  mood_label: null,
+  mood_score: null,
+  energy_label: null,
+  energy_score: null,
   appetite: null,
-  feelings: [],
+  sleep_hours: null,
+  note: null,
+  mood_tags: [],
   bloating: false,
   bloating_severity: null,
   exercised: false,
   exercise_type: null,
   exercise_minutes: null,
   period: false,
+  period_start: false,
   flow_level: null,
   sick: false,
   pain_areas: [],
@@ -67,16 +77,21 @@ export function useCheckin(date?: string) {
       if (data) {
         setExistingId(data.id);
         setState({
-          mood: data.mood,
-          energy: data.energy,
+          mood_label: data.mood_label,
+          mood_score: data.mood_score,
+          energy_label: data.energy_label,
+          energy_score: data.energy_score,
           appetite: data.appetite,
-          feelings: data.feelings || [],
+          sleep_hours: data.sleep_hours,
+          note: data.note,
+          mood_tags: data.mood_tags || [],
           bloating: data.bloating || false,
           bloating_severity: data.bloating_severity,
           exercised: data.exercised || false,
           exercise_type: data.exercise_type,
           exercise_minutes: data.exercise_minutes,
           period: data.period || false,
+          period_start: data.period_start || false,
           flow_level: data.flow_level,
           sick: data.sick || false,
           pain_areas: data.pain_areas || [],
@@ -105,16 +120,21 @@ export function useCheckin(date?: string) {
     const record = {
       user_id: user.id,
       date: checkinDate,
-      mood: state.mood,
-      energy: state.energy,
+      mood_label: state.mood_label,
+      mood_score: state.mood_score,
+      energy_label: state.energy_label,
+      energy_score: state.energy_score,
       appetite: state.appetite,
-      feelings: state.feelings.length > 0 ? state.feelings : null,
+      sleep_hours: state.sleep_hours,
+      note: state.note || null,
+      mood_tags: state.mood_tags.length > 0 ? state.mood_tags : null,
       bloating: state.bloating,
       bloating_severity: state.bloating ? state.bloating_severity : null,
       exercised: state.exercised,
       exercise_type: state.exercised ? state.exercise_type : null,
       exercise_minutes: state.exercised ? state.exercise_minutes : null,
       period: state.period,
+      period_start: state.period ? state.period_start : false,
       flow_level: state.period ? state.flow_level : null,
       sick: state.sick,
       pain_areas: state.sick ? state.pain_areas : null,

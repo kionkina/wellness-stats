@@ -5,13 +5,17 @@ import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MOOD_LABELS, ENERGY_LABELS, APPETITE_LABELS, FEELING_COLORS, type PrimaryFeeling } from '@/lib/constants';
+import { MOOD_OPTIONS, MOOD_TAG_COLORS } from '@/lib/constants';
 import { format, parseISO } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { Loader2, ChevronDown } from 'lucide-react';
 import type { CheckIn } from '@/lib/types';
 
-const MOOD_EMOJIS = ['', '😞', '😕', '😐', '🙂', '😄'];
+function getMoodEmoji(label: string | null): string {
+  if (!label) return '';
+  return MOOD_OPTIONS.find((o) => o.label === label)?.emoji ?? '';
+}
+
 const PAGE_SIZE = 20;
 
 export default function HistoryPage() {
@@ -58,17 +62,23 @@ export default function HistoryPage() {
     if (!data || data.length === 0) return;
 
     const headers = [
-      'date', 'mood', 'energy', 'appetite', 'feelings', 'bloating', 'bloating_severity',
-      'exercised', 'exercise_type', 'exercise_minutes', 'period', 'flow_level',
-      'sick', 'pain_areas', 'sick_notes', 'notable_events',
+      'date', 'mood_label', 'mood_score', 'energy_label', 'energy_score',
+      'appetite', 'sleep_hours', 'note', 'mood_tags',
+      'bloating', 'bloating_severity', 'exercised', 'exercise_type',
+      'exercise_minutes', 'period', 'flow_level', 'sick', 'pain_areas',
+      'sick_notes', 'notable_events',
     ];
 
     const rows = data.map((c: CheckIn) => [
       c.date,
-      c.mood ?? '',
-      c.energy ?? '',
+      c.mood_label ?? '',
+      c.mood_score ?? '',
+      c.energy_label ?? '',
+      c.energy_score ?? '',
       c.appetite ?? '',
-      c.feelings ? JSON.stringify(c.feelings) : '',
+      c.sleep_hours ?? '',
+      c.note ?? '',
+      c.mood_tags?.join('; ') ?? '',
       c.bloating ? 'yes' : 'no',
       c.bloating_severity ?? '',
       c.exercised ? 'yes' : 'no',
@@ -135,33 +145,31 @@ export default function HistoryPage() {
                   </div>
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {checkin.mood && (
+                      {checkin.mood_label && (
                         <span className="text-sm">
-                          {MOOD_EMOJIS[checkin.mood]} {MOOD_LABELS[checkin.mood]}
+                          {getMoodEmoji(checkin.mood_label)} {checkin.mood_label}
                         </span>
                       )}
-                      {checkin.energy && (
+                      {checkin.energy_label && (
                         <span className="text-sm text-muted-foreground">
-                          · {ENERGY_LABELS[checkin.energy]}
+                          · {checkin.energy_label}
                         </span>
                       )}
-                      {checkin.appetite && (
+                      {checkin.sleep_hours && (
                         <span className="text-sm text-muted-foreground">
-                          · {APPETITE_LABELS[checkin.appetite]}
+                          · {checkin.sleep_hours}h sleep
                         </span>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {checkin.feelings?.map((path: string[], i: number) => (
+                      {checkin.mood_tags?.map((tag: string) => (
                         <Badge
-                          key={i}
+                          key={tag}
                           variant="secondary"
-                          className="text-[10px] px-1.5 py-0"
-                          style={{
-                            backgroundColor: `${FEELING_COLORS[path[0] as PrimaryFeeling]}25`,
-                          }}
+                          className="text-[10px] px-1.5 py-0 capitalize"
+                          style={{ backgroundColor: `${MOOD_TAG_COLORS[tag] || '#d1d5db'}25` }}
                         >
-                          {path[path.length - 1]}
+                          {tag}
                         </Badge>
                       ))}
                       {checkin.exercised && (
@@ -176,9 +184,9 @@ export default function HistoryPage() {
                         <Badge variant="outline" className="text-[10px] px-1.5 py-0">Sick</Badge>
                       )}
                     </div>
-                    {checkin.notable_events && (
+                    {checkin.note && (
                       <p className="text-xs text-muted-foreground line-clamp-1">
-                        {checkin.notable_events}
+                        {checkin.note}
                       </p>
                     )}
                   </div>

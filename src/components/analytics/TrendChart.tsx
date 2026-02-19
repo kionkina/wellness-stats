@@ -26,6 +26,8 @@ interface TrendChartProps {
   secondaryData?: DataPoint[];
   secondaryLabel?: string;
   secondaryColor?: string;
+  yDomain?: [number, number];
+  yTicks?: number[];
 }
 
 export function TrendChart({
@@ -35,6 +37,8 @@ export function TrendChart({
   secondaryData,
   secondaryLabel,
   secondaryColor = 'hsl(var(--chart-2))',
+  yDomain = [-2, 2],
+  yTicks = [-2, -1, 0, 1, 2],
 }: TrendChartProps) {
   // Merge datasets if secondary provided
   const mergedData = data.map((d) => {
@@ -63,8 +67,8 @@ export function TrendChart({
           stroke="hsl(var(--muted-foreground))"
         />
         <YAxis
-          domain={[1, 5]}
-          ticks={[1, 2, 3, 4, 5]}
+          domain={yDomain}
+          ticks={yTicks}
           tick={{ fontSize: 11 }}
           stroke="hsl(var(--muted-foreground))"
         />

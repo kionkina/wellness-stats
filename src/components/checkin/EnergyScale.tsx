@@ -1,33 +1,31 @@
 'use client';
 
-import { ENERGY_LABELS } from '@/lib/constants';
+import { ENERGY_OPTIONS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 interface EnergyScaleProps {
-  value: number | null;
-  onChange: (energy: number) => void;
+  label: string | null;
+  onChange: (label: string, score: number) => void;
 }
 
-const ENERGY_EMOJIS = ['', '🪫', '😴', '⚡', '🔋', '⚡✨'];
-
-export function EnergyScale({ value, onChange }: EnergyScaleProps) {
+export function EnergyScale({ label: selected, onChange }: EnergyScaleProps) {
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">Energy</label>
       <div className="flex gap-2 justify-between">
-        {[1, 2, 3, 4, 5].map((level) => (
+        {ENERGY_OPTIONS.map((opt) => (
           <button
-            key={level}
-            onClick={() => onChange(level)}
+            key={opt.label}
+            onClick={() => onChange(opt.label, opt.score)}
             className={cn(
               'flex flex-col items-center gap-1 rounded-lg border p-3 flex-1 transition-all',
-              value === level
+              selected === opt.label
                 ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
                 : 'border-border hover:border-primary/50'
             )}
           >
-            <span className="text-xl">{ENERGY_EMOJIS[level]}</span>
-            <span className="text-[10px] text-muted-foreground">{ENERGY_LABELS[level]}</span>
+            <span className="text-xl">{opt.emoji}</span>
+            <span className="text-[10px] text-muted-foreground">{opt.label}</span>
           </button>
         ))}
       </div>

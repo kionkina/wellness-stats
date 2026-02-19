@@ -23,11 +23,13 @@ export default function HeatmapPage() {
     date: c.date,
     count:
       metric === 'mood'
-        ? c.mood || 0
+        ? c.mood_score ?? 0
         : metric === 'energy'
-        ? c.energy || 0
+        ? c.energy_score ?? 0
         : metric === 'appetite'
         ? c.appetite || 0
+        : metric === 'sleep'
+        ? c.sleep_hours || 0
         : c.exercised
         ? 1
         : 0,
@@ -42,6 +44,7 @@ export default function HeatmapPage() {
           <TabsTrigger value="mood">Mood</TabsTrigger>
           <TabsTrigger value="energy">Energy</TabsTrigger>
           <TabsTrigger value="appetite">Appetite</TabsTrigger>
+          <TabsTrigger value="sleep">Sleep</TabsTrigger>
           <TabsTrigger value="exercise">Exercise</TabsTrigger>
         </TabsList>
       </Tabs>

@@ -4,9 +4,10 @@ import { differenceInDays, parseISO } from 'date-fns';
 
 export function computeCorrelations(checkins: CheckIn[]): CorrelationResult[] {
   const metrics: { key: string; extract: (c: CheckIn) => number | null }[] = [
-    { key: 'mood', extract: (c) => c.mood },
-    { key: 'energy', extract: (c) => c.energy },
+    { key: 'mood', extract: (c) => c.mood_score },
+    { key: 'energy', extract: (c) => c.energy_score },
     { key: 'appetite', extract: (c) => c.appetite },
+    { key: 'sleep', extract: (c) => c.sleep_hours },
     { key: 'exercise', extract: (c) => (c.exercised ? 1 : 0) },
     { key: 'period', extract: (c) => (c.period ? 1 : 0) },
     { key: 'bloating', extract: (c) => (c.bloating ? 1 : 0) },
@@ -67,6 +68,7 @@ function generateInsight(m1: string, m2: string, r: number): string {
     mood: 'mood',
     energy: 'energy levels',
     appetite: 'appetite',
+    sleep: 'sleep hours',
     exercise: 'exercising',
     period: 'your period',
     bloating: 'bloating',
