@@ -165,6 +165,43 @@ export function useCheckin(date?: string) {
   return { state, update, save, loading, saving, isEdit: !!existingId };
 }
 
+export function useMonthCheckins(year?: number, month?: number) {
+  const now = new Date();
+  const y = year ?? now.getFullYear();
+  const m = month ?? now.getMonth(); // 0-indexed
+  const [checkinMap, setCheckinMap] = useState<Map<string, CheckIn>>(new Map());
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { setLoading(false); return; }
+
+      const startDate = format(new Date(y, m, 1), 'yyyy-MM-dd');
+      const endDate = format(new Date(y, m + 1, 0), 'yyyy-MM-dd');
+
+      const { data } = await supabase
+        .from('checkins')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', startDate)
+        .lte('date', endDate)
+        .order('date');
+
+      const map = new Map<string, CheckIn>();
+      (data as CheckIn[] || []).forEach((c) => map.set(c.date, c));
+      setCheckinMap(map);
+      setLoading(false);
+    }
+
+    load();
+  }, [y, m, supabase]);
+
+  return { checkinMap, loading };
+}
+
 export function useRecentCheckins(limit = 7) {
   const [checkins, setCheckins] = useState<CheckIn[]>([]);
   const [loading, setLoading] = useState(true);

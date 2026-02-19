@@ -29,28 +29,35 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const forwardedHost = request.headers.get('x-forwarded-host') ?? request.headers.get('host');
+  const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'http';
+
+  function buildRedirectUrl(pathname: string) {
+    const url = request.nextUrl.clone();
+    url.pathname = pathname;
+    if (forwardedHost) {
+      url.host = forwardedHost;
+      url.protocol = forwardedProto;
+    }
+    return url;
+  }
+
   const publicPaths = ['/login', '/auth/callback'];
   const isPublicPath = publicPaths.some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
 
   if (!user && !isPublicPath) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(buildRedirectUrl('/login'));
   }
 
   if (user && request.nextUrl.pathname === '/login') {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(buildRedirectUrl('/dashboard'));
   }
 
   // Redirect root to dashboard for authenticated users
   if (user && request.nextUrl.pathname === '/') {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(buildRedirectUrl('/dashboard'));
   }
 
   return supabaseResponse;
